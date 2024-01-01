@@ -7,3 +7,6 @@ class UserRole(CallbackData, prefix="role_change"):
 
 class DimasFunc(CallbackData, prefix="dimas_function"):
     operation: int
+
+class AdminFunc(CallbackData, prefix="admin_function"):
+    operation: int
