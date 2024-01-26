@@ -12,21 +12,44 @@ class Keyboard:
 
     def start_kb(self):
         builder = InlineKeyboardBuilder()
-        builder.button(text='Админ', callback_data=UserRole(is_admin=1))
-        builder.button(text='Дима',callback_data=UserRole(is_admin=0))
+        builder.button(text='Личный кабинет', callback_data=Profile(back='main'))
+        builder.button(text='Сделать заказ', callback_data=MakeOffer(back='main'))
         return builder.as_markup()
 
-    def admin_kb(self):
+    def back(self, data):
+        if data.back == 'main':
+            return MainPage()
+
+    def profile(self):
         builder = InlineKeyboardBuilder()
-        builder.button(text='Все заказы', callback_data=AdminFunc(operation=1))
-        builder.button(text='Новые заказы',callback_data=AdminFunc(operation=2))
-        builder.button(text='Поиск заказа',callback_data=AdminFunc(operation=3))
-        builder.adjust(2)
+        builder.button(text='История заказов', callback_data=StoryOffers())
+        builder.button(text='Контактные данные', callback_data=Contacts())
+        builder.button(text='Моя корзина', callback_data=Busket(back='profile'))
+        builder.button(text='Меню', callback_data=Menu())
+        builder.adjust(1)
         return builder.as_markup()
 
-
-    def dimas_kb(self):
+    def story(self, name='story'):
         builder = InlineKeyboardBuilder()
-        builder.button(text='Актуальная бд товаров', callback_data=DimasFunc(operation=1))
-        builder.button(text='Архивы фото',callback_data=DimasFunc(operation=2))
+        builder.button(text='Личный кабинет', callback_data=Profile(back=name))
+        builder.adjust(1)
         return builder.as_markup()
+
+    def contact(self):
+        return self.story(name='contact')
+
+    def menu(self):
+        builder = InlineKeyboardBuilder()
+        builder.button(text='Боба', callback_data=Profile(back='menu'))
+        builder.button(text='Йогурт', callback_data=Profile(back='menu'))
+        builder.button(text='Чиззо', callback_data=Profile(back='menu'))
+        builder.button(text='Лактис', callback_data=Profile(back='menu'))
+        builder.button(text='Кофе', callback_data=Profile(back='menu'))
+        builder.button(text='Фруктовый', callback_data=Profile(back='menu'))
+        builder.button(text='Простой чай', callback_data=Profile(back='menu'))
+        builder.button(text='Личный кабинет', callback_data=Profile(back='menu'))
+        builder.adjust(2,2,2,1,1)
+        return builder.as_markup()
+
+
+kb = Keyboard()

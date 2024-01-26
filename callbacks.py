@@ -1,12 +1,27 @@
 from aiogram.filters.callback_data import CallbackData
 
 
-class UserRole(CallbackData, prefix="role_change"):
-    is_admin: bool
+class MakeOffer(CallbackData, prefix="make_offer"):
+    back: str = None
 
 
-class DimasFunc(CallbackData, prefix="dimas_function"):
-    operation: int
+class Profile(CallbackData, prefix="profile"):
+    back: str = None
 
-class AdminFunc(CallbackData, prefix="admin_function"):
-    operation: int
+
+class MainPage(CallbackData, prefix="main_page"):
+    pass
+
+
+class Contacts(CallbackData, prefix="contacts"):
+    pass
+
+
+class Busket(CallbackData, prefix="busket"):
+    back: str = None
+
+class Menu(CallbackData, prefix="menu"):
+    pass
+
+class StoryOffers(CallbackData, prefix="offer_story"):
+    pass
