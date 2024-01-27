@@ -40,15 +40,15 @@ class Keyboard:
 
     def menu(self):
         builder = InlineKeyboardBuilder()
-        builder.button(text='Боба', callback_data=Profile(back='menu'))
-        builder.button(text='Йогурт', callback_data=Profile(back='menu'))
-        builder.button(text='Чиззо', callback_data=Profile(back='menu'))
-        builder.button(text='Лактис', callback_data=Profile(back='menu'))
-        builder.button(text='Кофе', callback_data=Profile(back='menu'))
-        builder.button(text='Фруктовый', callback_data=Profile(back='menu'))
-        builder.button(text='Простой чай', callback_data=Profile(back='menu'))
+        builder.button(text='Боба', callback_data=Categorie(name='Боба'))
+        builder.button(text='Йогурт', callback_data=Categorie(name='Йогурт'))
+        builder.button(text='Чиззо', callback_data=Categorie(name='Чиззо'))
+        builder.button(text='Лактис', callback_data=Categorie(name='Лактис'))
+        builder.button(text='Кофе', callback_data=Categorie(name='Кофе'))
+        builder.button(text='Фруктовый', callback_data=Categorie(name='Фруктовый'))
+        builder.button(text='Простой чай', callback_data=Categorie(name='Простой чай'))
         builder.button(text='Личный кабинет', callback_data=Profile(back='menu'))
-        builder.adjust(2,2,2,1,1)
+        builder.adjust(2, 2, 2, 1, 1)
         return builder.as_markup()
 
 
