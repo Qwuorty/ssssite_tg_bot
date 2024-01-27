@@ -13,7 +13,17 @@ class MainPage(CallbackData, prefix="main_page"):
     pass
 
 
-class Categorie(CallbackData, profile='categorie'):
+class Options(CallbackData, prefix='options'):
+    type_name: str = None
+    option_name: str = None
+
+
+class Categories(CallbackData, prefix='categories'):
+    name: str = None
+
+
+class Drink(CallbackData, prefix='drink'):
+    categorie: str = None
     name: str = None
 
 

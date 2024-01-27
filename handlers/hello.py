@@ -6,16 +6,11 @@ from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove, input_file
 from aiogram.types.input_file import FSInputFile
 from keyboards import keyboard
-from handlers import profile_page,story_page,contact_page,menu_page
 from texts import HELLO_TEXT
 from callbacks import MainPage
 
 router = Router()  #
 kb = keyboard.Keyboard()
-router.include_routers(profile_page.router,
-                       story_page.router,
-                       contact_page.router,
-                       menu_page.router)
 
 
 # Приветственное сообщение

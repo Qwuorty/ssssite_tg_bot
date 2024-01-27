@@ -16,7 +16,7 @@ async def menu_page(
     try:
         media = types.InputMediaPhoto(media=FSInputFile('media/main_menu.png'), caption=MENU_TEXT)
         await call.message.edit_media(media=media, reply_markup=kb.menu())
-    except Exception:
+    except Exception as ex:
         await call.message.answer_photo(photo=FSInputFile('media/main_menu.png'),
                                         caption=MENU_TEXT,
                                         reply_markup=kb.menu())
