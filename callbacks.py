@@ -16,6 +16,7 @@ class MainPage(CallbackData, prefix="main_page"):
 class Options(CallbackData, prefix='options'):
     type_name: str = None
     option_name: str = None
+    drink_id: int = None
 
 
 class Categories(CallbackData, prefix='categories'):
@@ -23,8 +24,7 @@ class Categories(CallbackData, prefix='categories'):
 
 
 class Drink(CallbackData, prefix='drink'):
-    categorie: str = None
-    name: str = None
+    drink_id: int = None
 
 
 class Contacts(CallbackData, prefix="contacts"):

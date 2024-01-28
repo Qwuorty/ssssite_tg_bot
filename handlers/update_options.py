@@ -14,23 +14,34 @@ async def update_options_kb(
         callback_data: Options
 ):
     if callback_data.type_name == 'volume':
-        repl = call.message.reply_markup
-        row = repl.inline_keyboard[0]
+        # обновляем объем для напитка
+        repl, row = call.message.reply_markup, call.message.reply_markup.inline_keyboard[0]
+        # прекращаем функцию, если нажали на уже выбранную опцию
         for j in row:
             if j.callback_data == call.data:
                 if '✅' in j.text:
                     await call.answer('Вы уже выбрали этот объём')
                     return
-        delta = 0
+        price = int(call.message.caption.split('\n')[-1].split()[0])
         for j in range(len(row)):
             if '✅' in row[j].text and row[j].text != '✅':
                 row[j].text = row[j].text[2:]
-                delta -= int(row[j].text.split('+')[1])
+                price -= int(row[j].text.split('+')[1][:-1])
             else:
                 row[j].text = '✅ ' + row[j].text
-                delta += int(row[j].text.split('+')[1])
-        new_caption = call.message.caption
-        price = int(new_caption.split('\n')[-1].split()[0])
-        new_caption = ''.join(new_caption.split('\n')[:-1])+'\n'+f'<b>{price+delta}</b> ₽'
-        await call.message.edit_caption(caption=new_caption, reply_markup=repl)
+                price += int(row[j].text.split('+')[1][:-1])
+        new_caption_with_updated_price = ''.join(call.message.caption.split('\n')[:-1]) + '\n' + f'<b>{price}</b> ₽'
+        await call.message.edit_caption(caption=new_caption_with_updated_price, reply_markup=repl)
+    elif callback_data.type_name == 'redo_dops':
+        if callback_data.option_name == 'closed':
+            await call.message.edit_caption(caption=call.message.caption,
+                                            reply_markup=kb.open_dops(callback_data.drink_id,
+                                                                      call.message.reply_markup)
+                                            )
+        elif callback_data.option_name == 'opened':
+            await call.message.edit_caption(caption=call.message.caption,
+                                            reply_markup=kb.close_dops(callback_data.drink_id,
+                                                                       call.message.reply_markup)
+                                            )
+
     await call.answer()

@@ -57,8 +57,8 @@ class Keyboard:
     def categories(self, name):
         builder = InlineKeyboardBuilder()
         size = len(self.sql.execute(f"SELECT name FROM menu WHERE type='{name}'").fetchall())
-        for drink in self.sql.execute(f"SELECT name FROM menu WHERE type='{name}'").fetchall():
-            builder.button(text=drink[0], callback_data=Drink(name=drink[0], categorie=name))
+        for drink in self.sql.execute(f"SELECT * FROM menu WHERE type='{name}'").fetchall():
+            builder.button(text=drink[1], callback_data=Drink(drink_id=int(drink[0])))
         builder.button(text=f'Назад в меню', callback_data=Menu())
         builder.button(text='Перейти в корзину', callback_data=Busket(back='menu'))
         arr = [2 for _ in range(size // 2)]
@@ -67,16 +67,108 @@ class Keyboard:
         builder.adjust(*arr)
         return builder.as_markup()
 
-    def drink_kb(self, name, drink_type):
+    def open_dops(self, drink_id, kb):
+        builder = InlineKeyboardBuilder()
+        sizes = []
+        dops = (self.sql.execute(f"SELECT dops FROM menu WHERE id='{drink_id}'").fetchone()[0]).split(';')[1:]
+
+        def add_dops_buttons():
+            # добавляем кнопки к клавиатуре с допольнительными опциями
+            for dop in dops[0].split(':')[1].split(','):
+                dop_name = dop[1:-1]
+                if 'сахар' in dop_name:
+                    builder.button(text=dop_name+'₽',
+                                   callback_data=Options(option_name=dop_name, type_name='sugar',
+                                                         drink_id=drink_id))
+                elif 'чиззо-шапк' in dop_name.lower():
+                    builder.button(text=dop_name+'₽',
+                                   callback_data=Options(option_name=dop_name, type_name='chisso_hat',
+                                                         drink_id=drink_id))
+                else:
+                    builder.button(text=dop_name+'₽',
+                                   callback_data=Options(option_name=dop_name, type_name='default_dop',
+                                                         drink_id=drink_id))
+
+        for i in kb.inline_keyboard:
+            sizes.append(len(i))
+            for j in i:
+                if j.text == '🔽 Дополнительно 🔽':
+                    builder.button(text='🔼 Дополнительно 🔼',
+                                   callback_data=Options(option_name='opened', type_name='redo_dops',
+                                                         drink_id=drink_id))
+                    add_dops_buttons()
+                    for _ in range(len(dops[0].split(':')[1].split(',')) // 2):
+                        sizes.append(2)
+                    if len(dops[0].split(':')[1].split(',')) % 2:
+                        sizes.append(1)
+                    if len(dops) == 2:
+                        # если есть возможность смены молока - добавляем кнопку
+                        builder.button(text='🔽 Альтернативное молоко 🔽',
+                                       callback_data=Options(option_name='closed', type_name='redo_milk',
+                                                             drink_id=drink_id))
+                        sizes.append(1)
+                else:
+                    builder.button(text=j.text, callback_data=j.callback_data)
+        builder.adjust(*sizes)
+        return builder.as_markup()
+
+    def close_dops(self, drink_id, kb):
+        builder = InlineKeyboardBuilder()
+        sizes = []
+        flag = 1
+        for i in kb.inline_keyboard:
+            if flag:
+                sizes.append(len(i))
+            for j in i:
+                if j.text == '🔼 Дополнительно 🔼':
+                    flag = 0
+                    builder.button(text='🔽 Дополнительно 🔽',
+                                   callback_data=Options(option_name='closed', type_name='redo_dops',
+                                                         drink_id=drink_id))
+                elif ('+' not in j.text or 'мл' in j.text) and j.text!='🔽 Альтернативное молоко 🔽':
+                    sizes.append(1)
+                    builder.button(text=j.text, callback_data=j.callback_data)
+        if self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()[0].split(';')[0] == \
+                self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id}'").fetchone()[0].split(';')[0]:
+            sizes = [sizes[0], 1, 2, 1]
+        else:
+            sizes = [sizes[0], 1, 1, 1]
+
+        builder.adjust(*sizes)
+        return builder.as_markup()
+
+    def drink_kb(self, drink_id):
         builder = InlineKeyboardBuilder()
         dops = (
-        self.sql.execute(f"SELECT dops FROM menu WHERE type='{drink_type}' AND name='{name}'").fetchone()[0]).split(';')
+            self.sql.execute(f"SELECT dops FROM menu WHERE id='{drink_id}'").fetchone()[0]).split(';')
+        drink_type = (
+            self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id}'").fetchone()[0]).split(';')[0]
         volume = dops[0].split(':')[1].split(',')
         for volume_type in volume:
-            builder.button(text=volume_type[1:-1], callback_data=Options(option_name=volume_type, type_name='volume'))
-        builder.button(text=f'Назад', callback_data=Categories(name=drink_type))
-        builder.button(text='Перейти в корзину', callback_data=Busket(back='menu'))
-        builder.adjust(2, 1, 1)
+            builder.button(text=volume_type[1:-1] + '₽',
+                           callback_data=Options(option_name=volume_type,
+                                                 type_name='volume',
+                                                 drink_id=drink_id)
+                           )
+        builder.button(text='🔽 Дополнительно 🔽',
+                       callback_data=Options(option_name='closed',
+                                             type_name='redo_dops',
+                                             drink_id=drink_id)
+                       )
+        builder.button(text=f'Назад',
+                       callback_data=Categories(name=drink_type)
+                       )
+        next_type = self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()[0].split(';')[0]
+        step = 1
+        if next_type == drink_type:
+            builder.button(text=f' → ',
+                           callback_data=Drink(drink_id=drink_id + 1)
+                           )
+            step = 2
+        builder.button(text='Перейти в корзину',
+                       callback_data=Busket(back='menu')
+                       )
+        builder.adjust(dops[0].count('мл'), 1, step, 1)
         return builder.as_markup()
 
 
