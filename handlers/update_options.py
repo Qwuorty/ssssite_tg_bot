@@ -43,5 +43,49 @@ async def update_options_kb(
                                             reply_markup=kb.close_dops(callback_data.drink_id,
                                                                        call.message.reply_markup)
                                             )
+    elif callback_data.type_name == 'sugar':
+        replace_sugar = None
+        new_reply_markup = call.message.reply_markup
+        for row in new_reply_markup.inline_keyboard:
+            for button in row:
+                if callback_data.option_name in button.callback_data:
+                    if '✅' in button.text:
+                        await call.answer('Вы уже выбрали это количество сахара для вашего напитка')
+                        return
+                    else:
+                        replace_sugar = 1
+        if replace_sugar:
+            for row in new_reply_markup.inline_keyboard:
+                for button in row:
+                    if 'sugar' in button.callback_data:
+                        if callback_data.option_name in button.callback_data:
+                            button.text = '✅ ' + button.text
+                        elif '✅' in button.text:
+                            button.text = button.text.split('✅')[1].strip()
+        await call.message.edit_caption(caption=call.message.caption, reply_markup=new_reply_markup)
+    elif callback_data.type_name == 'chisso_hat':
+        replace_chisso = None
+        new_price = int(call.message.caption.split('\n')[-1].split('₽')[0])
+        new_reply_markup = call.message.reply_markup
+        for row in new_reply_markup.inline_keyboard:
+            for button in row:
+                if callback_data.option_name in button.callback_data:
+                    if '✅' in button.text:
+                        await call.answer('Вы уже выбрали этe опцию Чиззо-шапки')
+                        return
+                    else:
+                        replace_chisso = 1
+        if replace_chisso:
+            for row in new_reply_markup.inline_keyboard:
+                for button in row:
+                    if 'chisso_hat' in button.callback_data:
+                        if callback_data.option_name in button.callback_data:
+                            button.text = '✅ ' + button.text
+                            new_price += int(button.text.split('+')[1].split('₽')[0])
+                        elif '✅' in button.text:
+                            button.text = button.text.split('✅')[1].strip()
+                            new_price -= int(button.text.split('+')[1].split('₽')[0])
+        new_caption = '\n'.join(call.message.caption.split('\n')[:-1])+'\n'+f"<b>{new_price} ₽</b>"
+        await call.message.edit_caption(caption=new_caption, reply_markup=new_reply_markup)
 
     await call.answer()
