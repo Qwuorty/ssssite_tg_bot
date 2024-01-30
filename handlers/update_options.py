@@ -39,7 +39,13 @@ async def update_options_kb(
                                                                       call.message.reply_markup)
                                             )
         elif callback_data.option_name == 'opened':
-            await call.message.edit_caption(caption=call.message.caption,
+            new_price = int(call.message.caption.split('\n')[-1].split('₽')[0])
+            for row in call.message.reply_markup.inline_keyboard[1:]:
+                for button in row:
+                    if '✅' in button.text:
+                        new_price -= int(button.text.split('+')[1].split('₽')[0])
+            new_caption = '\n'.join(call.message.caption.split('\n')[:-1]) + '\n' + f"<b>{new_price} ₽</b>"
+            await call.message.edit_caption(caption=new_caption,
                                             reply_markup=kb.close_dops(callback_data.drink_id,
                                                                        call.message.reply_markup)
                                             )
@@ -50,8 +56,7 @@ async def update_options_kb(
             for button in row:
                 if callback_data.option_name in button.callback_data:
                     if '✅' in button.text:
-                        await call.answer('Вы уже выбрали это количество сахара для вашего напитка')
-                        return
+                        button.text = button.text[1:].strip()
                     else:
                         replace_sugar = 1
         if replace_sugar:
@@ -71,8 +76,8 @@ async def update_options_kb(
             for button in row:
                 if callback_data.option_name in button.callback_data:
                     if '✅' in button.text:
-                        await call.answer('Вы уже выбрали этe опцию Чиззо-шапки')
-                        return
+                        button.text = button.text[1:].strip()
+                        new_price -= int(button.text.split('+')[1].split('₽')[0])
                     else:
                         replace_chisso = 1
         if replace_chisso:
@@ -85,7 +90,64 @@ async def update_options_kb(
                         elif '✅' in button.text:
                             button.text = button.text.split('✅')[1].strip()
                             new_price -= int(button.text.split('+')[1].split('₽')[0])
-        new_caption = '\n'.join(call.message.caption.split('\n')[:-1])+'\n'+f"<b>{new_price} ₽</b>"
+        new_caption = '\n'.join(call.message.caption.split('\n')[:-1]) + '\n' + f"<b>{new_price} ₽</b>"
+        await call.message.edit_caption(caption=new_caption, reply_markup=new_reply_markup)
+    elif callback_data.type_name == 'default_dop':
+        add_option = None
+        new_price = int(call.message.caption.split('\n')[-1].split('₽')[0])
+        new_reply_markup = call.message.reply_markup
+        for row in new_reply_markup.inline_keyboard:
+            for button in row:
+                if callback_data.option_name in button.callback_data:
+                    if '✅' in button.text:
+                        button.text = button.text[1:].strip()
+                        new_price -= int(button.text.split('+')[1].split('₽')[0])
+                    else:
+                        add_option = 1
+        if add_option:
+            for row in new_reply_markup.inline_keyboard:
+                for button in row:
+                    if 'default_dop' in button.callback_data:
+                        if callback_data.option_name in button.callback_data:
+                            button.text = '✅ ' + button.text
+                            new_price += int(button.text.split('+')[1].split('₽')[0])
+        new_caption = '\n'.join(call.message.caption.split('\n')[:-1]) + '\n' + f"<b>{new_price} ₽</b>"
+        await call.message.edit_caption(caption=new_caption, reply_markup=new_reply_markup)
+    elif callback_data.type_name == 'redo_milk':
+        if callback_data.option_name == 'closed':
+            await call.message.edit_caption(caption=call.message.caption,
+                                            reply_markup=kb.open_milk(callback_data.drink_id,
+                                                                      call.message.reply_markup)
+                                            )
+        elif callback_data.option_name == 'opened':
+            new_price = int(call.message.caption.split('\n')[-1].split('₽')[0])
+            await call.message.edit_caption(caption=call.message.caption,
+                                            reply_markup=kb.close_milk(callback_data.drink_id,
+                                                                      call.message.reply_markup)
+                                            )
+    elif callback_data.type_name == 'alt_milk':
+        replace_milk = None
+        new_price = int(call.message.caption.split('\n')[-1].split('₽')[0])
+        new_reply_markup = call.message.reply_markup
+        for row in new_reply_markup.inline_keyboard:
+            for button in row:
+                if callback_data.option_name in button.callback_data:
+                    if '✅' in button.text:
+                        button.text = button.text[1:].strip()
+                        new_price -= int(button.text.split('+')[1].split('₽')[0])
+                    else:
+                        replace_milk = 1
+        if replace_milk:
+            for row in new_reply_markup.inline_keyboard:
+                for button in row:
+                    if 'alt_milk' in button.callback_data:
+                        if callback_data.option_name in button.callback_data:
+                            button.text = '✅ ' + button.text
+                            new_price += int(button.text.split('+')[1].split('₽')[0])
+                        elif '✅' in button.text:
+                            button.text = button.text.split('✅')[1].strip()
+                            new_price -= int(button.text.split('+')[1].split('₽')[0])
+        new_caption = '\n'.join(call.message.caption.split('\n')[:-1]) + '\n' + f"<b>{new_price} ₽</b>"
         await call.message.edit_caption(caption=new_caption, reply_markup=new_reply_markup)
 
     await call.answer()

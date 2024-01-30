@@ -23,6 +23,10 @@ class Categories(CallbackData, prefix='categories'):
     name: str = None
 
 
+class Add_drink(CallbackData, prefix='add_tov'):
+    back: str = None
+    drink_id: int = None
+
 class Drink(CallbackData, prefix='drink'):
     drink_id: int = None
 
