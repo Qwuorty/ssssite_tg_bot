@@ -67,17 +67,18 @@ class Keyboard:
         builder.adjust(*arr)
         return builder.as_markup()
 
+    def redo_count(self,drink_id,text):
+        builder = InlineKeyboardBuilder()
+        builder.button(text=f'Назад', callback_data=Add_drink(back='drink', drink_id=drink_id,text=text))
+        builder.adjust(1)
+        return builder.as_markup()
+
     def preadded_kb(self, drink_id):
         builder = InlineKeyboardBuilder()
-        # size = len(self.sql.execute(f"SELECT name FROM menu WHERE type='{name}'").fetchall())
-        # for drink in self.sql.execute(f"SELECT * FROM menu WHERE type='{name}'").fetchall():
-        #     builder.button(text=drink[1], callback_data=Drink(drink_id=int(drink[0])))
         builder.button(text=f'Назад', callback_data=Drink(drink_id=drink_id))
-        # builder.button(text='Перейти в корзину', callback_data=Busket(back='menu'))
-        # arr = [2 for _ in range(size // 2)]
-        # arr.append(1)
-        # arr.append(1)
-        # builder.adjust(*arr)
+        builder.button(text=f'Изменить количество', callback_data=Count_drink(drink_id=drink_id,name='redo'))
+        builder.button(text='Перейти в корзину', callback_data=Busket(back='menu'))
+        builder.adjust(1)
         return builder.as_markup()
 
     def open_dops(self, drink_id, kb):
@@ -236,7 +237,7 @@ class Keyboard:
                        callback_data=Busket(back='menu')
                        )
         builder.button(text='Добавить в корзину',
-                       callback_data=Add_drink(back='drink', drink_id=drink_id)
+                       callback_data=AddDrink(back='drink', drink_id=str(drink_id))
                        )
         builder.adjust(dops[0].count('мл'), 1, step, 2)
         return builder.as_markup()

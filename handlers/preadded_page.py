@@ -9,10 +9,10 @@ from handlers import story_page
 router = Router()
 
 
-@router.callback_query(Add_drink.filter())
+@router.callback_query(AddDrink.filter())
 async def pre_added_check_of_add(
         call: types.CallbackQuery,
-        callback_data: Add_drink
+        callback_data: AddDrink
 ):
     drink_name = kb.sql.execute(f"SELECT name FROM menu WHERE id='{callback_data.drink_id}'").fetchone()[0]
     caregorie_name = kb.sql.execute(f"SELECT type FROM menu WHERE id='{callback_data.drink_id}'").fetchone()[0]
@@ -32,6 +32,9 @@ async def pre_added_check_of_add(
                     dops.append(button.text.split('✅')[1].strip())
                 elif 'alt_milk' in button.callback_data:
                     alt_milk = (button.text.split('✅')[1].strip())
+    dops_text = ''.join(["<b>•\t" + i + '</b>\n' for i in dops])
+    if dops_text == '':
+        dops_text='<b> Не выбранно</b>'
     capti = f'''Вы выбрали напиток <b>{drink_name}</b>
 Категория - <b>{caregorie_name}</b>
 
@@ -41,7 +44,7 @@ async def pre_added_check_of_add(
 
 Альтернативное молоко - <b>{alt_milk}</b>
 
-Дополнительно: \n{''.join(["<b>•\t" + i + '</b>\n' for i in dops])}
+Дополнительно: \n{dops_text}
 
 Итоговая стоимость - <b>{price} ₽</b>'''
     await call.message.edit_caption(caption=capti, reply_markup=kb.preadded_kb(callback_data.drink_id))
