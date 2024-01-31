@@ -19,6 +19,7 @@ async def pre_added_check_of_add(
     sugar = 'Стандартный'
     chisso = 'Стандартная'
     alt_milk = 'Не выбрано'
+    price = int(call.message.caption.split('\n')[-1].split()[0])
     dops = []
     for row in call.message.reply_markup.inline_keyboard:
         for button in row:
@@ -31,7 +32,7 @@ async def pre_added_check_of_add(
                     dops.append(button.text.split('✅')[1].strip())
                 elif 'alt_milk' in button.callback_data:
                     alt_milk = (button.text.split('✅')[1].strip())
-    caption = f'''Вы выбрали напиток <b>{drink_name}</b>
+    capti = f'''Вы выбрали напиток <b>{drink_name}</b>
 Категория - <b>{caregorie_name}</b>
 
 Сахар - <b>{sugar}</b>
@@ -40,6 +41,8 @@ async def pre_added_check_of_add(
 
 Альтернативное молоко - <b>{alt_milk}</b>
 
-Дополнительно: {'\n\t'.join(dops)}'''
-    await call.message.answer(caption)
+Дополнительно: \n{''.join(["<b>•\t" + i + '</b>\n' for i in dops])}
+
+Итоговая стоимость - <b>{price} ₽</b>'''
+    await call.message.edit_caption(caption=capti, reply_markup=kb.preadded_kb(callback_data.drink_id))
     await call.answer()

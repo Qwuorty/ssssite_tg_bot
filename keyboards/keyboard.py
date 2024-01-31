@@ -67,6 +67,19 @@ class Keyboard:
         builder.adjust(*arr)
         return builder.as_markup()
 
+    def preadded_kb(self, drink_id):
+        builder = InlineKeyboardBuilder()
+        # size = len(self.sql.execute(f"SELECT name FROM menu WHERE type='{name}'").fetchall())
+        # for drink in self.sql.execute(f"SELECT * FROM menu WHERE type='{name}'").fetchall():
+        #     builder.button(text=drink[1], callback_data=Drink(drink_id=int(drink[0])))
+        builder.button(text=f'Назад', callback_data=Drink(drink_id=drink_id))
+        # builder.button(text='Перейти в корзину', callback_data=Busket(back='menu'))
+        # arr = [2 for _ in range(size // 2)]
+        # arr.append(1)
+        # arr.append(1)
+        # builder.adjust(*arr)
+        return builder.as_markup()
+
     def open_dops(self, drink_id, kb):
         builder = InlineKeyboardBuilder()
         sizes = []
@@ -77,15 +90,15 @@ class Keyboard:
             for dop in dops[0].split(':')[1].split(','):
                 dop_name = dop[1:-1]
                 if 'сахар' in dop_name:
-                    builder.button(text=dop_name+'₽',
+                    builder.button(text=dop_name + '₽',
                                    callback_data=Options(option_name=dop_name, type_name='sugar',
                                                          drink_id=drink_id))
                 elif 'чиззо-шапк' in dop_name.lower():
-                    builder.button(text=dop_name+'₽',
+                    builder.button(text=dop_name + '₽',
                                    callback_data=Options(option_name=dop_name, type_name='chisso_hat',
                                                          drink_id=drink_id))
                 else:
-                    builder.button(text=dop_name+'₽',
+                    builder.button(text=dop_name + '₽',
                                    callback_data=Options(option_name=dop_name, type_name='default_dop',
                                                          drink_id=drink_id))
 
@@ -121,10 +134,9 @@ class Keyboard:
             # добавляем кнопки к клавиатуре с допольнительными опциями
             for dop in milk[0].split(':')[1].split(','):
                 dop_name = dop[1:-1]
-                builder.button(text=dop_name+'₽',
+                builder.button(text=dop_name + '₽',
                                callback_data=Options(option_name=dop_name, type_name='alt_milk',
                                                      drink_id=drink_id))
-
 
         for i in kb.inline_keyboard:
             sizes.append(len(i))
@@ -167,7 +179,6 @@ class Keyboard:
         builder.adjust(*sizes)
         return builder.as_markup()
 
-
     def close_dops(self, drink_id, kb):
         builder = InlineKeyboardBuilder()
         sizes = []
@@ -181,7 +192,7 @@ class Keyboard:
                     builder.button(text='🔽 Дополнительно 🔽',
                                    callback_data=Options(option_name='closed', type_name='redo_dops',
                                                          drink_id=drink_id))
-                elif ('+' not in j.text or 'мл' in j.text) and j.text!='🔽 Альтернативное молоко 🔽':
+                elif ('+' not in j.text or 'мл' in j.text) and j.text != '🔽 Альтернативное молоко 🔽':
                     sizes.append(1)
                     builder.button(text=j.text, callback_data=j.callback_data)
         if self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()[0].split(';')[0] == \
