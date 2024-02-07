@@ -8,6 +8,21 @@ from handlers import story_page
 
 router = Router()
 
+def get_bold(text):
+    nt = text
+    nt = nt.replace('напиток', 'напиток<b>', 1)
+    nt = nt.replace('Категория', '</b>Категория', 1)
+    nt = nt.replace('Сахар -', 'Сахар -<b>', 1)
+    nt = nt.replace('Чиззо-шапка', '</b>Чиззо-шапка<b>', 1)
+    nt = nt.replace('Альтернативное молоко - ', '</b>Альтернативное молоко - ', 1)
+    nt = nt.replace('Дополнительно:', 'Дополнительно:<b>', 1)
+    nt = nt + '</b>'
+    if 'Количество' in nt:
+        cnt = int(nt[nt.find('Количество'):].split()[1])
+    else:
+        cnt = 1
+    cost = int(nt[nt.find('Итоговая стоимость -'):].split()[3])
+    return cost, cnt, nt
 
 @router.callback_query(AddDrink.filter())
 async def pre_added_check_of_add(
@@ -44,8 +59,8 @@ async def pre_added_check_of_add(
 
 Альтернативное молоко - <b>{alt_milk}</b>
 
-Дополнительно: \n{dops_text}
+Дополнительно:\n{dops_text}<b>
 
-Итоговая стоимость - <b>{price} ₽</b>'''
+Итоговая стоимость - {price} ₽</b>'''
     await call.message.edit_caption(caption=capti, reply_markup=kb.preadded_kb(callback_data.drink_id))
     await call.answer()

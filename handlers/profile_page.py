@@ -5,6 +5,8 @@ from aiogram.types.input_file import FSInputFile
 from aiogram import types
 from keyboards.keyboard import kb
 from handlers import story_page
+from aiogram.filters import Command
+from aiogram.types import Message, ReplyKeyboardRemove, input_file
 
 router = Router()
 
@@ -21,3 +23,9 @@ async def callbacks_num_change_fab(
                                         caption=PROFILE_TEXT,
                                         reply_markup=kb.profile())
     await call.answer()
+
+@router.message(Command("profle"))
+async def cmd_start(message: Message):
+    await message.answer_photo(photo=FSInputFile('media/persona.jpeg'),
+                                    caption=PROFILE_TEXT,
+                                    reply_markup=kb.profile())

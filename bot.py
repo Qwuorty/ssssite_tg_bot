@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from handlers import hello
 from handlers import profile_page, story_page, contact_page, menu_page, categorie_page, drink_page, update_options, \
-    preadded_page,redo_count
+    preadded_page,count_drink,busket_page
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,7 +21,8 @@ async def main():
                        drink_page.router,
                        update_options.router,
                        preadded_page.router,
-                       redo_count.router)
+                       count_drink.router,
+                       busket_page.router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

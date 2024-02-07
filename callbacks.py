@@ -43,6 +43,7 @@ class Contacts(CallbackData, prefix="contacts"):
 
 class Busket(CallbackData, prefix="busket"):
     back: str = None
+    drink_id: str = None
 
 
 class Menu(CallbackData, prefix="menu"):

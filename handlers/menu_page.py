@@ -4,6 +4,8 @@ from callbacks import *
 from aiogram.types.input_file import FSInputFile
 from aiogram import types
 from keyboards.keyboard import kb
+from aiogram.filters import Command
+from aiogram.types import Message, ReplyKeyboardRemove, input_file
 
 
 router = Router()
@@ -21,3 +23,9 @@ async def menu_page(
                                         caption=MENU_TEXT,
                                         reply_markup=kb.menu())
     await call.answer()
+
+@router.message(Command("menu"))
+async def cmd_start(message: Message):
+    await message.answer_photo(photo=FSInputFile('media/main_menu.png'),
+                                        caption=MENU_TEXT,
+                                        reply_markup=kb.menu())
