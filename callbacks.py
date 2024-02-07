@@ -41,6 +41,10 @@ class Contacts(CallbackData, prefix="contacts"):
     pass
 
 
+class RedOffer(CallbackData, prefix="redoffer"):
+    offer_id: int = None
+
+
 class Busket(CallbackData, prefix="busket"):
     back: str = None
     drink_id: str = None

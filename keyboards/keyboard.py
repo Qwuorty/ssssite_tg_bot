@@ -27,13 +27,25 @@ class Keyboard:
         builder.button(text='История заказов', callback_data=StoryOffers())
         builder.button(text='Контактные данные', callback_data=Contacts())
         builder.button(text='Сделать заказ', callback_data=Menu())
-        builder.button(text='Перейти в корзину', callback_data=Busket(back='profile',drink_id=''))
+        builder.button(text='Перейти в корзину', callback_data=Busket(back='profile', drink_id='-1'))
         builder.adjust(1)
         return builder.as_markup()
 
-    def busket(self, drink_id):
+    def busket(self, back, drink_id=None, chat_id=None):
         builder = InlineKeyboardBuilder()
-        builder.button(text='Назад', callback_data=Drink(drink_id=drink_id))
+        arr = self.sql.execute(f"SELECT tov_id,cnt,cost,id FROM basket WHERE chat_id='{chat_id}'").fetchall()
+        for i in arr:
+            name = self.sql.execute(f"SELECT name FROM menu WHERE id='{i[0]}'").fetchone()
+            builder.button(text=f"{name[0]} {int(i[2])} * {i[1]}", callback_data=RedOffer(offer_id=int(i[3])))
+        if back == 'drink':
+            builder.button(text='Назад', callback_data=Drink(drink_id=drink_id))
+        elif back == 'profile':
+            builder.button(text='Назад', callback_data=Profile(back='-1'))
+        elif back == 'categorie':
+            builder.button(text='Назад', callback_data=Categories(name=drink_id))
+        elif back == 'menu':
+            builder.button(text='Назад', callback_data=Menu())
+        builder.adjust(1)
         return builder.as_markup()
 
     def story(self, name='story'):
@@ -65,7 +77,7 @@ class Keyboard:
         for drink in self.sql.execute(f"SELECT * FROM menu WHERE type='{name}'").fetchall():
             builder.button(text=drink[1], callback_data=Drink(drink_id=int(drink[0])))
         builder.button(text=f'Назад в меню', callback_data=Menu())
-        builder.button(text='Перейти в корзину', callback_data=Busket(back='categorie',drink_id=str(name)))
+        builder.button(text='Перейти в корзину', callback_data=Busket(back='categorie', drink_id=str(name)))
         arr = [2 for _ in range(size // 2)]
         arr.append(1)
         arr.append(1)
@@ -86,7 +98,7 @@ class Keyboard:
         builder.button(text=f'Назад', callback_data=Drink(drink_id=drink_id))
         builder.button(text=f'Изменить количество', callback_data=Count_drink(drink_id=drink_id, name='redo'))
         builder.button(text=f'Добавить в корзину', callback_data=Busket(drink_id=str(drink_id), back='add'))
-        builder.button(text='Перейти в корзину', callback_data=Busket(back='menu', drink_id=str(drink_id)))
+        builder.button(text='Перейти в корзину', callback_data=Busket(back='drink', drink_id=str(drink_id)))
         builder.adjust(1)
         return builder.as_markup()
 
@@ -243,7 +255,7 @@ class Keyboard:
                            )
             step = 2
         builder.button(text='Перейти в корзину',
-                       callback_data=Busket(back='menu',drink_id='')
+                       callback_data=Busket(back='drink', drink_id=str(drink_id))
                        )
         builder.button(text='Добавить в корзину',
                        callback_data=AddDrink(back='drink', drink_id=str(drink_id))
