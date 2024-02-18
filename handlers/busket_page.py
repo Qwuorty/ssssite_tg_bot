@@ -38,7 +38,6 @@ async def callbacks_num_change_fab(
                                       caption='text')
         await call.message.edit_media(media=media,
                                       reply_markup=kb.busket('drink', int(callback_data.drink_id), call.from_user.id))
-
     elif callback_data.back == 'add':
         caption = call.message.caption
         crit = caption.split('\n\n\n')[0]
@@ -52,7 +51,11 @@ async def callbacks_num_change_fab(
             kb.sql.execute("INSERT INTO 'basket' ('chat_id','tov_id','crit','cnt','cost') VALUES (?,?,?,?,?)", (
                 call.from_user.id, callback_data.drink_id, crit, cnt, cost))
         kb.db.commit()
-        await call.answer()
+        media = types.InputMediaPhoto(media=FSInputFile(f'media/menu_photo.jpg'),
+                                      caption='text')
+        await call.message.edit_media(media=media,
+                                      reply_markup=kb.busket('drink', int(callback_data.drink_id), call.from_user.id))
+    await call.answer()
 
 
 @router.message(Command("busket"))

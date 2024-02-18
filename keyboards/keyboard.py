@@ -36,7 +36,8 @@ class Keyboard:
         arr = self.sql.execute(f"SELECT tov_id,cnt,cost,id FROM basket WHERE chat_id='{chat_id}'").fetchall()
         for i in arr:
             name = self.sql.execute(f"SELECT name FROM menu WHERE id='{i[0]}'").fetchone()
-            builder.button(text=f"{name[0]} {int(i[2])} * {i[1]}", callback_data=RedOffer(offer_id=int(i[3])))
+            builder.button(text=f"{name[0]} {int(i[2])} * {i[1]}",
+                           callback_data=RedOffer(drink_id=str(drink_id), offer_id=int(i[3]), back=back))
         if back == 'drink':
             builder.button(text='Назад', callback_data=Drink(drink_id=drink_id))
         elif back == 'profile':
@@ -45,6 +46,12 @@ class Keyboard:
             builder.button(text='Назад', callback_data=Categories(name=drink_id))
         elif back == 'menu':
             builder.button(text='Назад', callback_data=Menu())
+        builder.adjust(1)
+        return builder.as_markup()
+
+    def back_to_busket(self, back, drink_id=None, chat_id=None):
+        builder = InlineKeyboardBuilder()
+        builder.button(text='Назад', callback_data=Busket(back=back, drink_id=str(drink_id)))
         builder.adjust(1)
         return builder.as_markup()
 

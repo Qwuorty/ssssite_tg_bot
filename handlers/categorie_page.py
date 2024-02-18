@@ -15,10 +15,10 @@ async def categorie_of_drinks(
         callback_data:Categories
 ):
     try:
-        media = types.InputMediaPhoto(media=FSInputFile(f'media/categorie/{callback_data.name}.jpg'), caption=CATEGORIES_TEXT[callback_data.name])
+        media = types.InputMediaPhoto(media=FSInputFile(f'media/categorie/{callback_data.name}.png'), caption=CATEGORIES_TEXT[callback_data.name])
         await call.message.edit_media(media=media, reply_markup=kb.categories(callback_data.name))
     except Exception:
-        await call.message.answer_photo(photo=FSInputFile(f'media/categorie/{callback_data.name}.jpg'),
+        await call.message.answer_photo(photo=FSInputFile(f'media/categorie/{callback_data.name}.png'),
                                         caption=CATEGORIES_TEXT[callback_data.name],
                                         reply_markup=kb.categories(callback_data.name))
     await call.answer()

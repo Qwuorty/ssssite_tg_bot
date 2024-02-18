@@ -43,6 +43,8 @@ class Contacts(CallbackData, prefix="contacts"):
 
 class RedOffer(CallbackData, prefix="redoffer"):
     offer_id: int = None
+    back: str
+    drink_id: str
 
 
 class Busket(CallbackData, prefix="busket"):
