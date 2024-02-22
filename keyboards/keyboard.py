@@ -70,17 +70,29 @@ class Keyboard:
             builder.button(text='Назад', callback_data=Menu())
         sz = []
         while num != 0:
-            sz.append(4 if num % 4==0 else num % 4)
+            sz.append(4 if num % 4 == 0 else num % 4)
             num //= 4
         sz.append(1)
         print(sz)
         builder.adjust(*sz)
         return builder.as_markup()
 
-    def back_to_busket(self, back, drink_id=None, chat_id=None):
+    def back_to_busket(self, back, drink_id=None, chat_id=None, offer_id=None):
         builder = InlineKeyboardBuilder()
+        cnt = kb.db.execute(f"SELECT cnt FROM basket WHERE id='{offer_id}'").fetchone()[0]
+        offer_id = str(offer_id)
+        if cnt == 1:
+            builder.button(text=f'Удалить',
+                           callback_data=AddBusket(name='delete', drink_id=drink_id, back=back, offer_id=offer_id))
+            builder.button(text=f'➕',
+                           callback_data=AddBusket(name='add', drink_id=drink_id, back=back, offer_id=offer_id))
+        else:
+            builder.button(text=f'➖',
+                           callback_data=AddBusket(name='minus', drink_id=drink_id, back=back, offer_id=offer_id))
+            builder.button(text=f'➕',
+                           callback_data=AddBusket(name='add', drink_id=drink_id, back=back, offer_id=offer_id))
         builder.button(text='Назад', callback_data=Busket(back=back, drink_id=str(drink_id)))
-        builder.adjust(1)
+        builder.adjust(2, 1)
         return builder.as_markup()
 
     def story(self, name='story'):
@@ -249,7 +261,7 @@ class Keyboard:
                     builder.button(text='🔽 Дополнительно 🔽',
                                    callback_data=Options(option_name='closed', type_name='redo_dops',
                                                          drink_id=drink_id))
-                elif ('+' not in j.text or 'мл' in j.text) and j.text != '🔽 Альтернативное молоко 🔽':
+                elif ('+' not in j.text or 'мл' in j.text) and 'Альтернативное молоко' not in j.text:
                     sizes.append(1)
                     builder.button(text=j.text, callback_data=j.callback_data)
         if self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()[0].split(';')[0] == \
@@ -283,7 +295,7 @@ class Keyboard:
         builder.button(text=f'Назад',
                        callback_data=Categories(name=drink_type)
                        )
-        next_type = self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id+1}'").fetchone()
+        next_type = self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()
         if next_type:
             next_type = next_type[0].split(';')[0]
         step = 1

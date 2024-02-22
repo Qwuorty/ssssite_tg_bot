@@ -52,6 +52,13 @@ class Busket(CallbackData, prefix="busket"):
     drink_id: str = None
 
 
+class AddBusket(CallbackData, prefix="addbusket"):
+    back: str = None
+    drink_id: str = None
+    offer_id: str = None
+    name: str = None
+
+
 class Menu(CallbackData, prefix="menu"):
     pass
 
