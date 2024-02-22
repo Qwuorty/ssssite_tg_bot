@@ -49,7 +49,7 @@ async def pre_added_check_of_add(
                     alt_milk = (button.text.split('✅')[1].strip())
     dops_text = ''.join(["<b>•\t" + i + '</b>\n' for i in dops])
     if dops_text == '':
-        dops_text='<b> Не выбранно</b>'
+        dops_text='<b>Не выбранно</b>'
     capti = f'''Вы выбрали напиток <b>{drink_name}</b>
 Категория - <b>{caregorie_name}</b>
 

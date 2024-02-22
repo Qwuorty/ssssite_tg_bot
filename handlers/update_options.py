@@ -14,9 +14,7 @@ async def update_options_kb(
         callback_data: Options
 ):
     if callback_data.type_name == 'volume':
-        # обновляем объем для напитка
         repl, row = call.message.reply_markup, call.message.reply_markup.inline_keyboard[0]
-        # прекращаем функцию, если нажали на уже выбранную опцию
         for j in row:
             if j.callback_data == call.data:
                 if '✅' in j.text:

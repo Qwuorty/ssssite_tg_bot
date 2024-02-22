@@ -14,6 +14,7 @@ async def categorie_of_drinks(
         call: types.CallbackQuery,
         callback_data:Categories
 ):
+
     try:
         media = types.InputMediaPhoto(media=FSInputFile(f'media/categorie/{callback_data.name}.png'), caption=CATEGORIES_TEXT[callback_data.name])
         await call.message.edit_media(media=media, reply_markup=kb.categories(callback_data.name))

@@ -12,6 +12,27 @@ class Keyboard:
         self.db = sqlite3.connect('db.db', check_same_thread=False)
         self.sql = self.db.cursor()
 
+    def number_to_emoji(self, number):
+        emoji_dict = {
+            '0': '0️⃣',
+            '1': '1️⃣',
+            '2': '2️⃣',
+            '3': '3️⃣',
+            '4': '4️⃣',
+            '5': '5️⃣',
+            '6': '6️⃣',
+            '7': '7️⃣',
+            '8': '8️⃣',
+            '9': '9️⃣'
+        }
+
+        result = ''
+        for digit in str(number):
+            if digit in emoji_dict:
+                result += emoji_dict[digit]
+
+        return result
+
     def start_kb(self):
         builder = InlineKeyboardBuilder()
         builder.button(text='Личный кабинет', callback_data=Profile(back='main'))
@@ -34,10 +55,11 @@ class Keyboard:
     def busket(self, back, drink_id=None, chat_id=None):
         builder = InlineKeyboardBuilder()
         arr = self.sql.execute(f"SELECT tov_id,cnt,cost,id FROM basket WHERE chat_id='{chat_id}'").fetchall()
+        num = 0
         for i in arr:
-            name = self.sql.execute(f"SELECT name FROM menu WHERE id='{i[0]}'").fetchone()
-            builder.button(text=f"{name[0]} {int(i[2])} * {i[1]}",
-                           callback_data=RedOffer(drink_id=str(drink_id), offer_id=int(i[3]), back=back))
+            num += 1
+            builder.button(text=f"{self.number_to_emoji(num)}",
+                           callback_data=RedOffer(drink_id=str(i[0]), offer_id=int(i[3]), back=back))
         if back == 'drink':
             builder.button(text='Назад', callback_data=Drink(drink_id=drink_id))
         elif back == 'profile':
@@ -46,7 +68,13 @@ class Keyboard:
             builder.button(text='Назад', callback_data=Categories(name=drink_id))
         elif back == 'menu':
             builder.button(text='Назад', callback_data=Menu())
-        builder.adjust(1)
+        sz = []
+        while num != 0:
+            sz.append(4 if num % 4==0 else num % 4)
+            num //= 4
+        sz.append(1)
+        print(sz)
+        builder.adjust(*sz)
         return builder.as_markup()
 
     def back_to_busket(self, back, drink_id=None, chat_id=None):
@@ -234,6 +262,7 @@ class Keyboard:
         return builder.as_markup()
 
     def drink_kb(self, drink_id):
+        print(drink_id)
         builder = InlineKeyboardBuilder()
         dops = (
             self.sql.execute(f"SELECT dops FROM menu WHERE id='{drink_id}'").fetchone()[0]).split(';')
@@ -254,7 +283,9 @@ class Keyboard:
         builder.button(text=f'Назад',
                        callback_data=Categories(name=drink_type)
                        )
-        next_type = self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id + 1}'").fetchone()[0].split(';')[0]
+        next_type = self.sql.execute(f"SELECT type FROM menu WHERE id='{drink_id+1}'").fetchone()
+        if next_type:
+            next_type = next_type[0].split(';')[0]
         step = 1
         if next_type == drink_type:
             builder.button(text=f' → ',
