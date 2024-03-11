@@ -8,11 +8,13 @@ from handlers import story_page
 
 router = Router()
 
+
 def get_bold(text):
     nt = text
     nt = nt.replace('напиток', 'напиток<b>', 1)
     nt = nt.replace('Категория', '</b>Категория', 1)
     nt = nt.replace('Сахар -', 'Сахар -<b>', 1)
+    nt = nt.replace('Объём -', '</b>Объём -<b>', 1)
     nt = nt.replace('Чиззо-шапка', '</b>Чиззо-шапка<b>', 1)
     nt = nt.replace('Альтернативное молоко - ', '</b>Альтернативное молоко - ', 1)
     nt = nt.replace('Дополнительно:', 'Дополнительно:<b>', 1)
@@ -23,6 +25,7 @@ def get_bold(text):
         cnt = 1
     cost = int(nt[nt.find('Итоговая стоимость -'):].split()[3])
     return cost, cnt, nt
+
 
 @router.callback_query(AddDrink.filter())
 async def pre_added_check_of_add(
@@ -47,11 +50,15 @@ async def pre_added_check_of_add(
                     dops.append(button.text.split('✅')[1].strip())
                 elif 'alt_milk' in button.callback_data:
                     alt_milk = (button.text.split('✅')[1].strip())
+                else:
+                    valume = button.text.split('✅')[1].strip()
     dops_text = ''.join(["<b>•\t" + i + '</b>\n' for i in dops])
     if dops_text == '':
-        dops_text='<b>Не выбранно</b>'
+        dops_text = '<b>Не выбранно</b>'
     capti = f'''Вы выбрали напиток <b>{drink_name}</b>
 Категория - <b>{caregorie_name}</b>
+
+Объём - <b>{valume}</b>
 
 Сахар - <b>{sugar}</b>
 

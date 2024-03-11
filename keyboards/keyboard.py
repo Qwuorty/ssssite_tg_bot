@@ -2,6 +2,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import datetime as dt
+from texts import month_names
 from random import randint
 from callbacks import *
 import sqlite3
@@ -85,6 +86,36 @@ class Keyboard:
         builder.adjust(*sz)
         return builder.as_markup()
 
+    def get_waited_zakaz(self):
+        text = ""
+        ind = 1
+        builder = InlineKeyboardBuilder()
+        for i in kb.sql.execute(f"SELECT * FROM orders WHERE status='wait'").fetchall():
+            date_obj = dt.datetime.strptime(i[1], "%Y-%m-%d %H:%M:%S.%f")
+            formatted_date = date_obj.strftime("%d %B %H:%M")
+            arr = formatted_date.split()
+            arr[1] = month_names[arr[1]]
+            text += f"{ind}) {' '.join(arr)} - {kb.sql.execute(f"SELECT number FROM users WHERE chat_id='{i[2]}'").fetchone()[0]}\n"
+            builder.button(text=str(ind), callback_data=Offer(offer_id=i[0]))
+            ind += 1
+        builder.button(text=f'Назад', callback_data=Admin(oper='back'))
+        sz = []
+        while ind > 4:
+            ind -= 4
+            sz.append(4)
+        if ind>1:
+            sz.append(ind - 1)
+        sz.append(1)
+        builder.adjust(*sz)
+        return text, builder.as_markup()
+
+    def get_offer_kb(self, offer_id):
+        builder = InlineKeyboardBuilder()
+        builder.button(text='Завершить заказ', callback_data=Offer(offer_id=-offer_id))
+        builder.button(text=f'к заказам', callback_data=Admin(oper='zakaz'))
+        builder.adjust(1)
+        return builder.as_markup()
+
     def back_to_busket(self, back, drink_id=None, chat_id=None, offer_id=None):
         builder = InlineKeyboardBuilder()
         cnt = kb.db.execute(f"SELECT cnt FROM basket WHERE id='{offer_id}'").fetchone()[0]
@@ -155,9 +186,11 @@ class Keyboard:
         for i in self.sql.execute(f"SELECT id FROM menu").fetchall():
             name, cat = self.sql.execute(f"SELECT name, type FROM menu WHERE id='{i[0]}'").fetchone()
             if i in arr:
-                builder.button(text='❌'+name + ' ' + cat, callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
+                builder.button(text='❌' + name + ' ' + cat,
+                               callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
             else:
-                builder.button(text='✅'+name + ' ' + cat, callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
+                builder.button(text='✅' + name + ' ' + cat,
+                               callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
         builder.button(text=f'Назад', callback_data=Admin(oper='back'))
         builder.adjust(1)
         return builder.as_markup()
