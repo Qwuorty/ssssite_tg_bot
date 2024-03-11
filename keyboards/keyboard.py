@@ -1,4 +1,4 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import datetime as dt
@@ -32,6 +32,13 @@ class Keyboard:
                 result += emoji_dict[digit]
 
         return result
+
+    def contact_kb(self):
+        builder = ReplyKeyboardBuilder()
+        builder.row(
+            types.KeyboardButton(text="Запросить геолокацию", request_location=True),
+            types.KeyboardButton(text="Запросить контакт", request_contact=True, request_location=True))
+        return builder.as_markup(resize_keyboard=True)
 
     def start_kb(self):
         builder = InlineKeyboardBuilder()
@@ -68,6 +75,7 @@ class Keyboard:
             builder.button(text='Назад', callback_data=Categories(name=drink_id))
         elif back == 'menu':
             builder.button(text='Назад', callback_data=Menu())
+        builder.button(text='Оплатить', callback_data=Profile(back='add'))
         sz = []
         while num != 0:
             sz.append(4 if num % 4 == 0 else num % 4)
@@ -83,7 +91,8 @@ class Keyboard:
         offer_id = str(offer_id)
         if cnt == 1:
             builder.button(text=f'Удалить',
-                           callback_data=AddBusket(name='delete', drink_id=drink_id, back=back, offer_id=offer_id))
+                           callback_data=AddBusket(name='shure_delete', drink_id=drink_id, back=back,
+                                                   offer_id=offer_id))
             builder.button(text=f'➕',
                            callback_data=AddBusket(name='add', drink_id=drink_id, back=back, offer_id=offer_id))
         else:
@@ -131,6 +140,28 @@ class Keyboard:
         builder.adjust(*arr)
         return builder.as_markup()
 
+    def admin_kb(self):
+        builder = InlineKeyboardBuilder()
+        builder.button(text=f'Статистика', callback_data=Admin(oper='stat'))
+        builder.button(text=f'История', callback_data=Admin(oper='story_zak'))
+        builder.button(text=f'Заказы', callback_data=Admin(oper='zakaz'))
+        builder.button(text=f'СтопЛист', callback_data=Admin(oper='stops'))
+        builder.adjust(1)
+        return builder.as_markup()
+
+    def get_stops(self, point_id):
+        builder = InlineKeyboardBuilder()
+        arr = self.sql.execute(f"SELECT tov_id FROM stop WHERE point='{point_id}'").fetchall()
+        for i in self.sql.execute(f"SELECT id FROM menu").fetchall():
+            name, cat = self.sql.execute(f"SELECT name, type FROM menu WHERE id='{i[0]}'").fetchone()
+            if i in arr:
+                builder.button(text='❌'+name + ' ' + cat, callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
+            else:
+                builder.button(text='✅'+name + ' ' + cat, callback_data=RedStop(point_id=int(point_id), tov_id=int(i[0])))
+        builder.button(text=f'Назад', callback_data=Admin(oper='back'))
+        builder.adjust(1)
+        return builder.as_markup()
+
     def redo_count(self, drink_id):
         builder = InlineKeyboardBuilder()
         builder.button(text=f'➕', callback_data=Count_drink(name='add', drink_id=drink_id))
@@ -145,8 +176,15 @@ class Keyboard:
         builder.button(text=f'Назад', callback_data=Drink(drink_id=drink_id))
         builder.button(text=f'Изменить количество', callback_data=Count_drink(drink_id=drink_id, name='redo'))
         builder.button(text=f'Добавить в корзину', callback_data=Busket(drink_id=str(drink_id), back='add'))
-        builder.button(text='Перейти в корзину', callback_data=Busket(back='drink', drink_id=str(drink_id)))
         builder.adjust(1)
+        return builder.as_markup()
+
+    def shure_delete(self, back, drink_id, offer_id, name):
+        builder = InlineKeyboardBuilder()
+        builder.button(text='Да, удалить',
+                       callback_data=AddBusket(drink_id=drink_id, name='delete', offer_id=offer_id, back=back))
+        builder.button(text='Нет', callback_data=RedOffer(drink_id=drink_id, back=back, offer_id=offer_id))
+        builder.adjust(2)
         return builder.as_markup()
 
     def open_dops(self, drink_id, kb):
@@ -155,7 +193,6 @@ class Keyboard:
         dops = (self.sql.execute(f"SELECT dops FROM menu WHERE id='{drink_id}'").fetchone()[0]).split(';')[1:]
 
         def add_dops_buttons():
-            # добавляем кнопки к клавиатуре с допольнительными опциями
             for dop in dops[0].split(':')[1].split(','):
                 dop_name = dop[1:-1]
                 if 'сахар' in dop_name:

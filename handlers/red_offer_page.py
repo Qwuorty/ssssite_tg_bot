@@ -120,6 +120,11 @@ async def callbacks_num_change_fab(
                                                                        drink_id=callback_data.drink_id,
                                                                        offer_id=callback_data.offer_id))
 
+    elif callback_data.name == 'shure_delete':
+        print(callback_data)
+        await call.message.edit_reply_markup(
+            reply_markup=kb.shure_delete(callback_data.back, callback_data.drink_id, callback_data.offer_id,
+                                         callback_data.name))
     elif callback_data.name == 'delete':
         kb.db.execute(f"DELETE FROM basket WHERE id='{callback_data.offer_id}'")
         kb.db.commit()
@@ -138,14 +143,4 @@ async def callbacks_num_change_fab(
             await call.message.edit_media(media=get_media(text),
                                           reply_markup=kb.busket('drink', int(callback_data.drink_id),
                                                                  call.from_user.id))
-    await call.answer()
-    # name = kb.db.execute(f"SELECT photo FROM menu WHERE id='{callback_data.offer_id}'").fetchone()[0]
-    # text = get_bold(*kb.db.execute(
-    #     f"SELECT crit,cost,cnt FROM basket WHERE id='{callback_data.offer_id}' AND chat_id='{call.from_user.id}'").fetchone())
-    # media = types.InputMediaPhoto(media=FSInputFile(f'media/drinks/{name}'),
-    #                               caption=text)
-    # await call.message.edit_media(media=media,
-    #                               reply_markup=kb.back_to_busket(chat_id=call.from_user.id, back=callback_data.back,
-    #                                                              drink_id=callback_data.drink_id,
-    #                                                              offer_id=callback_data.offer_id))
-    await call.answer()
+        await call.answer()

@@ -13,9 +13,17 @@ router = Router()  #
 kb = keyboard.Keyboard()
 
 
-# Приветственное сообщение
 @router.message(Command("start"))
 async def cmd_start(message: Message):
+    await message.answer_photo(
+        photo=FSInputFile('media/hi.jpg'),
+        caption=HELLO_TEXT,
+        reply_markup=kb.start_kb()
+    )
+
+
+@router.message(F.text.lower() == "запросить контакт")
+async def reg_phone(message: Message):
     await message.answer_photo(
         photo=FSInputFile('media/hi.jpg'),
         caption=HELLO_TEXT,

@@ -13,6 +13,11 @@ class MainPage(CallbackData, prefix="main_page"):
     pass
 
 
+class RedStop(CallbackData, prefix="redstop"):
+    point_id: int = None
+    tov_id: int = None
+
+
 class Options(CallbackData, prefix='options'):
     type_name: str = None
     option_name: str = None
@@ -35,6 +40,10 @@ class AddDrink(CallbackData, prefix='add_tov'):
 
 class Drink(CallbackData, prefix='drink'):
     drink_id: int = None
+
+
+class Admin(CallbackData, prefix='admin'):
+    oper: str = None
 
 
 class Contacts(CallbackData, prefix="contacts"):
